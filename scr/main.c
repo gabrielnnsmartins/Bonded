@@ -52,12 +52,13 @@ void ResetarJogador();
 
 int main() {
     // Inicialização da Janela
-    const int larguraTela = 800;
-    const int alturaTela = 450;
+    const int larguraTela = 1280;
+    const int alturaTela = 720;
     InitWindow(larguraTela, alturaTela, "Jogo da Cavaleira - Raylib Local");
     SetTargetFPS(60);
 
     InicializarJogo();
+    
 
     // Loop Principal do Jogo
     while (!WindowShouldClose()) {
@@ -126,13 +127,19 @@ void ResetarJogador() {
 void AtualizarJogo() {
     switch (estadoAtual) {
         case TELA_INICIAL:
-            // Verificar clique no botão START
+            // Verificar clique no botão START com o mouse
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 Vector2 mousePos = GetMousePosition();
                 if (CheckCollisionPointRec(mousePos, rectBotaoStart)) {
                     estadoAtual = FASE_1;
                     ResetarJogador();
                 }
+            }
+            
+            // Verificar pressionar a tecla ESPAÇO para iniciar o jogo
+            if (IsKeyPressed(KEY_SPACE)) {
+                estadoAtual = FASE_1;
+                ResetarJogador();
             }
             break;
 
@@ -226,6 +233,14 @@ void AtualizarJogador() {
         if (player.posicao.y + alturaFrame > GetScreenHeight()) player.posicao.y = GetScreenHeight() - alturaFrame;
     }
 
+    if (player.posicao.y < 0) player.posicao.y = 0;
+
+    //RESTRIÇÃO DE 506 PX
+    // Se a posição Y tentar ser maior que 506, força a ser 506.
+    if (player.posicao.y < 105) {
+        player.posicao.y = 105;
+        }
+
     // Lógica de Animação
     player.tempoAnimacao += GetFrameTime();
     if (player.tempoAnimacao >= VELOCIDADE_ANIMACAO) {
@@ -268,6 +283,8 @@ void DesenharJogo() {
     switch (estadoAtual) {
         case TELA_INICIAL:
             if(texTelaInicial.id != 0) DrawTexture(texTelaInicial, 0, 0, WHITE);
+            // Adicionar texto indicando que pode pressionar ESPAÇO
+            DrawText("Pressione ESPACO ou clique em START para iniciar", 350, 650, 20, WHITE);
             break;
 
         case FASE_1:
@@ -292,8 +309,8 @@ void DesenharJogo() {
         case FASE_3:
         case ESPERA_F3:
             if(texFase3.id != 0) DrawTexture(texFase3, 0, 0, WHITE);
+            DrawText(TextFormat("FASE 3 (Piso) - Aguarde: %.1f segundos...", TEMPO_ESPERA - temporizadorFase), 10, 10, 20, BLACK);
             DesenharJogador();
-            DrawText(TextFormat("FASE 3 (Piso) - Aguarde: %.1f segundos...", TEMPO_ESPERA - temporizadorFase), 10, 10, 20, Black);
             break;
     }
 
