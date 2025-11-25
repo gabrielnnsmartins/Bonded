@@ -10,6 +10,7 @@ typedef struct NoInimigo {
     int frameAtual;
     float tempoAnimacao;
     int vida;
+    bool ativo;
     struct NoInimigo *next;
 } Inimigo;
 
@@ -27,5 +28,5 @@ void RemoverInimigosInativos();
 void LiberarInimigos();
 void DesenharInimigos();
 void VerificarColisao(Rectangle player);
-
+void VerificarColisaoAtaque(Rectangle hitbox, int dano);
 #endif

@@ -4,7 +4,6 @@
 #include <math.h>
 #include "inimigo.h"
 
-// --- Definições de Estados do Jogo ---
 typedef enum {
     TELA_INICIAL,
     FASE_1,
@@ -15,43 +14,101 @@ typedef enum {
     ESPERA_F3
 } EstadoJogo;
 
-// --- Estrutura do Jogador ---
 typedef struct {
     Vector2 posicao;
     float velocidade;
     int frameAtual;
     float tempoAnimacao;
-    int direcao; // 1 = Direita, -1 = Esquerda
+    int direcao;
     bool movendo;
-    // Flags para rastrear se o jogador aprendeu a se mover
     bool moveuEsquerda;
     bool moveuDireita;
     bool moveuCima;
     bool moveuBaixo;
+    bool atacando;
+    float tempoAtaque;
+    int ultimaDirecaoHorizontal;
+    
 } Jogador;
 
 
 
-// --- Variáveis Globais ---
-EstadoJogo estadoAtual = TELA_INICIAL;
-Texture2D texTelaInicial, texPersonagem, texFase1, texFase2, texFase3;
-Texture2D texInimigo;
 
+
+
+EstadoJogo estadoAtual = TELA_INICIAL;
+Texture2D texTelaInicial, texPersonagem, texAtaque, texFase1, texFase2, texFase3;
+Texture2D texInimigo;
 Jogador player;
 float temporizadorFase = 0.0f;
 const float TEMPO_ESPERA = 20.0f;
-Rectangle rectBotaoStart; // Retângulo de colisão para o botão START
+Rectangle rectBotaoStart;
+float tempoTotalPartida = 0.0f;
+bool partidaEmAndamento = false;
 
 
-// --- Constantes de Animação ---
 const int NUM_FRAMES = 6;
 const int NUM_FRAMES_INIMIGOS = 4;
-const float VELOCIDADE_ANIMACAO = 0.1f; // Tempo por frame
+const float VELOCIDADE_ANIMACAO = 0.1f;
 int larguraFrame;
 int alturaFrame;
 
 
-// --- Protótipos de Funções ---
+
+const float DURACAO_ATAQUE = 0.12f;
+const int DANO_ATAQUE = 50;
+const float ALCANCE_ATAQUE = 80.0f;
+int larguraFrameAtaque = 120;
+int alturaFrameAtaque;
+
+float temposLeaderboard[5];
+int totalTempos = 0;
+bool mostrarLeaderboard = false;
+float ultimoTempo = 0.0f;
+
+
+void SalvarLeaderboard(float tempoFinal) {
+    float tempos[6];
+    int count = 0;
+
+    FILE *f = fopen("leaderboard.txt", "r");
+    if (f != NULL) {
+        while (count < 5 && fscanf(f, "%f", &tempos[count]) == 1) count++;
+        fclose(f);
+    }
+
+    tempos[count++] = tempoFinal;
+
+    for (int i = 0; i < count - 1; i++) {
+        for (int j = i + 1; j < count; j++) {
+            if (tempos[i] > tempos[j]) {
+                float aux = tempos[i];
+                tempos[i] = tempos[j];
+                tempos[j] = aux;
+            }
+        }
+    }
+
+    if (count > 5) count = 5;
+
+    f = fopen("leaderboard.txt", "w");
+    for (int i = 0; i < count; i++) fprintf(f, "%.2f\n", tempos[i]);
+    fclose(f);
+}
+
+void CarregarLeaderboard() {
+    totalTempos = 0;
+    FILE *f = fopen("leaderboard.txt", "r");
+    if (f != NULL) {
+        while (totalTempos < 5 && fscanf(f, "%f", &temposLeaderboard[totalTempos]) == 1) {
+            totalTempos++;
+        }
+        fclose(f);
+    }
+}
+
+
+
 void InicializarJogo();
 void AtualizarJogo();
 void DesenharJogo();
@@ -59,19 +116,18 @@ void DescarregarRecursos();
 void AtualizarJogador();
 void DesenharJogador();
 void ResetarJogador();
+void ExecutarAtaque();
+Rectangle ObterHitboxAtaque();
 Rectangle GetPlayerRec();
 
 int main() {
-    // Inicialização da Janela
     const int larguraTela = 1280;
     const int alturaTela = 720;
-    InitWindow(larguraTela, alturaTela, "Jogo da Cavaleira - Raylib Local");
+    InitWindow(larguraTela, alturaTela, "Bonded");
     SetTargetFPS(60);
 
     InicializarJogo();
-    
 
-    // Loop Principal do Jogo
     while (!WindowShouldClose()) {
         AtualizarJogo();
         DesenharJogo();
@@ -79,7 +135,6 @@ int main() {
 
     DescarregarRecursos();
     CloseWindow();
-
     return 0;
 }
 
@@ -94,93 +149,57 @@ Rectangle GetPlayerRec(){
     return rec;
 }
 
-// --- Implementação das Funções ---
-
 void InicializarJogo() {
-    // --- CARREGAMENTO DAS SUAS IMAGENS ---
-    // O código procura estes arquivos na mesma pasta onde o executável do jogo estiver.
-    
     texTelaInicial = LoadTexture("scr/tela_de_inicio.jpg");
-    
-    // ATENÇÃO: Renomeie seu arquivo de sprite sheet para "personagem.png"
-    texPersonagem = LoadTexture("scr/personagem.png"); 
-    
-    // Carregando os cenários conforme a numeração dos seus arquivos
-    texFase1 = LoadTexture("scr/Fase1.jpg"); // Parede de tijolos
-    texFase2 = LoadTexture("scr/Fase2.jpg"); // Campo verde
-    texFase3 = LoadTexture("scr/Fase3.jpg"); //Piso quadriculado
+    texPersonagem = LoadTexture("scr/personagem.png");
+    texAtaque = LoadTexture("scr/ataque.png");
+    texFase1 = LoadTexture("scr/Fase1.jpg");
+    texFase2 = LoadTexture("scr/Fase2.jpg");
+    texFase3 = LoadTexture("scr/Fase3.jpg");
+    texInimigo = LoadTexture("inimigo.png");
 
-    texInimigo = LoadTexture("scr/Inimigo.jpg"); // FALTA COLOCAR
+    larguraFrame = texPersonagem.width / NUM_FRAMES;
+    alturaFrame = texPersonagem.height;
+    alturaFrameAtaque = texAtaque.height;
 
-    // Verificação de segurança: se a imagem da personagem não carregar, evita crash
-    if (texPersonagem.id == 0) {
-        TraceLog(LOG_WARNING, "ERRO: Nao foi possivel carregar 'personagem.png'. Verifique o nome do arquivo.");
-         larguraFrame = 32; // Valores padrão para não travar
-         alturaFrame = 32;
-    } else {
-        // Configurar Animação baseada no tamanho da imagem carregada
-        larguraFrame = texPersonagem.width / NUM_FRAMES;
-        alturaFrame = texPersonagem.height;
-    }
-
-    if (texInimigo.id == 0) {
-        TraceLog(LOG_WARNING, "ERRO: Nao foi possivel carregar 'Inimigo.png'. Verifique o nome do arquivo.");
-         larguraFrameInimigo= 32; // Valores padrão para não travar
-         alturaFrameInimigo = 32;
-    } else {
-        // Configurar Animação baseada no tamanho da imagem carregada
-        larguraFrameInimigo = texInimigo.width / NUM_FRAMES_INIMIGOS;
-        alturaFrameInimigo= texInimigo.height;
-    }
-
-
-    // Definir a área do botão START na tela inicial
-    // Ajustado para a posição do botão na sua imagem "tela_de_inicio.jpg"
     rectBotaoStart = (Rectangle){ 570, 180, 150, 60 };
-
     ResetarJogador();
 }
 
 void ResetarJogador() {
-    player.posicao = (Vector2){ 400, 225 }; // Centro da tela
+    player.posicao = (Vector2){ 400, 225 };
     player.velocidade = 200.0f;
     player.frameAtual = 0;
     player.tempoAnimacao = 0.0f;
     player.direcao = 1;
     player.movendo = false;
-    // Reseta os aprendizados apenas se voltar para a tela inicial,
-    // caso contrário, mantém para as fases seguintes.
-    if (estadoAtual == TELA_INICIAL || estadoAtual == FASE_1) {
-        player.moveuEsquerda = false;
-        player.moveuDireita = false;
-        player.moveuCima = false;
-        player.moveuBaixo = false;
-    }
+    player.atacando = false;
+    player.tempoAtaque = 0.0f;
+    player.ultimaDirecaoHorizontal = 1;
+
+    player.moveuEsquerda = false;
+    player.moveuDireita = false;
+    player.moveuCima = false;
+    player.moveuBaixo = false;
 }
 
 void AtualizarJogo() {
-    extern Inimigo *ListaInimigo;
+    
+    if (partidaEmAndamento) tempoTotalPartida += GetFrameTime();
+    //extern Inimigo *ListaInimigo;
+    extern int total_inimigos_vivos;
     switch (estadoAtual) {
         case TELA_INICIAL:
-            // Verificar clique no botão START com o mouse
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-                Vector2 mousePos = GetMousePosition();
-                if (CheckCollisionPointRec(mousePos, rectBotaoStart)) {
-                    estadoAtual = FASE_1;
-                    ResetarJogador();
-                }
-            }
-            
-            // Verificar pressionar a tecla ESPAÇO para iniciar o jogo
             if (IsKeyPressed(KEY_SPACE)) {
                 estadoAtual = FASE_1;
                 ResetarJogador();
+                tempoTotalPartida = 0.0f;
+                partidaEmAndamento = true;
             }
             break;
 
         case FASE_1:
             AtualizarJogador();
-            // Verificar se todas as direções foram usadas
             if (player.moveuEsquerda && player.moveuDireita && player.moveuCima && player.moveuBaixo) {
                 estadoAtual = ESPERA_F1;
                 temporizadorFase = 0.0f;
@@ -188,7 +207,7 @@ void AtualizarJogo() {
             break;
 
         case ESPERA_F1:
-            AtualizarJogador(); // O jogador ainda pode se mover
+            AtualizarJogador();
             temporizadorFase += GetFrameTime();
             if (temporizadorFase >= TEMPO_ESPERA) {
                 estadoAtual = FASE_2;
@@ -202,11 +221,13 @@ void AtualizarJogo() {
             break;
 
         case FASE_2:
-            // A fase 2 começa a contar o tempo imediatamente
 
             AtualizarJogador();
             AtualizarInimigos(player.posicao,GetFrameTime());
             VerificarColisao(GetPlayerRec());
+            if (player.atacando) {
+                VerificarColisaoAtaque(ObterHitboxAtaque(), DANO_ATAQUE);
+            }
 
             if (total_inimigos_vivos == 0){ //mudei ListaInimigo == NULL
 
@@ -238,7 +259,6 @@ void AtualizarJogo() {
             break; 
 
         case FASE_3:
-            // A fase 3 começa a contar o tempo imediatamente
             estadoAtual = ESPERA_F3;
             temporizadorFase = 0.0f;
             //adcionar chefao ou obstaculo final;
@@ -248,7 +268,10 @@ void AtualizarJogo() {
             AtualizarJogador();
             temporizadorFase += GetFrameTime();
             if (temporizadorFase >= TEMPO_ESPERA) {
-                estadoAtual = TELA_INICIAL; // Volta para o início
+                partidaEmAndamento = false;
+                ultimoTempo = tempoTotalPartida;
+                SalvarLeaderboard(tempoTotalPartida);
+                estadoAtual = TELA_INICIAL;
                 ResetarJogador();
                 LiberarInimigos();
             }
@@ -257,131 +280,161 @@ void AtualizarJogo() {
 }
 
 void AtualizarJogador() {
-    player.movendo = false;
-    Vector2 movimento = { 0.0f, 0.0f };
+    if (player.atacando) {
+        player.tempoAtaque += GetFrameTime();
+        if (player.tempoAtaque >= DURACAO_ATAQUE) {
+            player.atacando = false;
+            player.tempoAtaque = 0.0f;
+        }
+        return;
+    }
 
-    // Controles de Movimento
+    if (IsKeyPressed(KEY_F)) {
+        ExecutarAtaque();
+        return;
+    }
+
+    player.movendo = false;
+    Vector2 movimento = {0};
+
     if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
         movimento.x += 1.0f;
         player.direcao = 1;
+        player.ultimaDirecaoHorizontal = 1;
         player.movendo = true;
-        if (estadoAtual == FASE_1 || estadoAtual == ESPERA_F1) player.moveuDireita = true;
+        player.moveuDireita = true;
     }
     if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
         movimento.x -= 1.0f;
         player.direcao = -1;
+        player.ultimaDirecaoHorizontal = -1;
         player.movendo = true;
-        if (estadoAtual == FASE_1 || estadoAtual == ESPERA_F1) player.moveuEsquerda = true;
-    }
-    if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)) {
-        movimento.y += 1.0f;
-        player.movendo = true;
-        if (estadoAtual == FASE_1 || estadoAtual == ESPERA_F1) player.moveuBaixo = true;
+        player.moveuEsquerda = true;
     }
     if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) {
         movimento.y -= 1.0f;
+        player.direcao = player.ultimaDirecaoHorizontal;
         player.movendo = true;
-        if (estadoAtual == FASE_1 || estadoAtual == ESPERA_F1) player.moveuCima = true;
+        player.moveuCima = true;
+    }
+    if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)) {
+        movimento.y += 1.0f;
+        player.direcao = player.ultimaDirecaoHorizontal;
+        player.movendo = true;
+        player.moveuBaixo = true;
     }
 
-    // Atualizar Posição
     player.posicao.x += movimento.x * player.velocidade * GetFrameTime();
     player.posicao.y += movimento.y * player.velocidade * GetFrameTime();
 
-    // Manter o jogador dentro da tela
-    if (texPersonagem.id != 0) { // Só tenta colidir se a textura existe
-        if (player.posicao.x < 0) player.posicao.x = 0;
-        if (player.posicao.y < 0) player.posicao.y = 0;
-        if (player.posicao.x + larguraFrame > GetScreenWidth()) player.posicao.x = GetScreenWidth() - larguraFrame;
-        if (player.posicao.y + alturaFrame > GetScreenHeight()) player.posicao.y = GetScreenHeight() - alturaFrame;
-    }
+    if (player.posicao.y < 105) player.posicao.y = 105;
 
-    if (player.posicao.y < 0) player.posicao.y = 0;
-
-    //RESTRIÇÃO DE 506 PX
-    // Se a posição Y tentar ser maior que 506, força a ser 506.
-
-    if (player.posicao.y < 105) {
-        player.posicao.y = 105;
-    }
- 
-    // Lógica de Animação
     player.tempoAnimacao += GetFrameTime();
     if (player.tempoAnimacao >= VELOCIDADE_ANIMACAO) {
         player.tempoAnimacao = 0.0f;
-        if (player.movendo) {
-            player.frameAtual++;
-        }
+        if (player.movendo) player.frameAtual++;
     }
 }
 
+void ExecutarAtaque() {
+    player.atacando = true;
+    player.tempoAtaque = 0.0f;
+}
+
+Rectangle ObterHitboxAtaque() {
+    Rectangle hitbox = {0};
+    if (player.ultimaDirecaoHorizontal == 1) {
+        hitbox.x = player.posicao.x + larguraFrame;
+        hitbox.width = ALCANCE_ATAQUE;
+    } else {
+        hitbox.x = player.posicao.x - ALCANCE_ATAQUE;
+        hitbox.width = ALCANCE_ATAQUE;
+    }
+    hitbox.y = player.posicao.y;
+    hitbox.height = alturaFrame;
+    return hitbox;
+}
+
 void DesenharJogador() {
-    if (texPersonagem.id == 0) return; // Não desenha se a imagem falhou ao carregar
-
-    Rectangle sourceRec;
-    int frameIndex = 0;
-
-    if (player.direcao == -1) { // Esquerda
-        if (player.movendo) {
-            frameIndex = player.frameAtual % 3; // Frames 0, 1, 2
-        } else {
-            frameIndex = 0; // Frame parado
-        }
-    } else { // Direita
-        if (player.movendo) {
-            // Frames 5, 4, 3 (ordem inversa)
-            frameIndex = 5 - (player.frameAtual % 3);
-        } else {
-            frameIndex = 5; // Frame parado
-        }
+    if (player.atacando) {
+        int frameIndex = (player.ultimaDirecaoHorizontal == 1 ? 1 : 0);
+        Rectangle sourceRec = (Rectangle){ frameIndex * larguraFrameAtaque, 0, larguraFrameAtaque, alturaFrameAtaque };
+        Vector2 posicaoAtaque = {
+            player.posicao.x - (larguraFrameAtaque - larguraFrame) / 2,
+            player.posicao.y - (alturaFrameAtaque - alturaFrame) / 2
+        };
+        DrawTextureRec(texAtaque, sourceRec, posicaoAtaque, WHITE);
+        return;
     }
 
-    sourceRec = (Rectangle){ frameIndex * larguraFrame, 0, larguraFrame, alturaFrame };
+    int frameIndex = 0;
+    if (player.ultimaDirecaoHorizontal == -1) {
+        frameIndex = player.movendo ? (player.frameAtual % 3) : 0;
+    } else {
+        frameIndex = player.movendo ? 5 - (player.frameAtual % 3) : 5;
+    }
+
+    Rectangle sourceRec = (Rectangle){ frameIndex * larguraFrame, 0, larguraFrame, alturaFrame };
     DrawTextureRec(texPersonagem, sourceRec, player.posicao, WHITE);
 }
 
 void DesenharJogo() {
     BeginDrawing();
     ClearBackground(RAYWHITE);
+    char textoTempo[64];
 
     switch (estadoAtual) {
         case TELA_INICIAL:
-            if(texTelaInicial.id != 0) DrawTexture(texTelaInicial, 0, 0, WHITE);
-            // Adicionar texto indicando que pode pressionar ESPAÇO
-            DrawText("Pressione ESPACO ou clique em START para iniciar", 350, 650, 20, WHITE);
+            if (texTelaInicial.id != 0) DrawTexture(texTelaInicial, 0, 0, WHITE);
+            DrawText("Pressione ESPACO para iniciar", 350, 650, 20, WHITE);
+            CarregarLeaderboard();
+
+            DrawText("TOP 5 MELHORES TEMPOS:", 50, 50, 30, YELLOW);
+
+            for (int i = 0; i < totalTempos; i++) {
+                char linha[64];
+                sprintf(linha, "%dº - %.2f segundos", i+1, temposLeaderboard[i]);
+                DrawText(linha, 50, 100 + i * 40, 25, WHITE);
+            }
+
+            if (ultimoTempo > 0) {
+                char msgFinal[64];
+                sprintf(msgFinal, "SEU ULTIMO TEMPO: %.2f segundos", ultimoTempo);
+                DrawText(msgFinal, 50, 350, 28, GREEN);
+            }
+
             break;
 
         case FASE_1:
-            if(texFase1.id != 0) DrawTexture(texFase1, 0, 0, WHITE);
+            DrawTexture(texFase1, 0, 0, WHITE);
             DesenharJogador();
-            DrawText("FASE 1: Use as setas (ou WASD) para se mover em todas as direcoes!", 10, 10, 20, WHITE);
+            sprintf(textoTempo, "Tempo: %.2f", tempoTotalPartida);
+            DrawText(textoTempo, 20, 20, 30, WHITE);
             break;
 
         case ESPERA_F1:
-            if(texFase1.id != 0) DrawTexture(texFase1, 0, 0, WHITE);
+            DrawTexture(texFase1, 0, 0, WHITE);
             DesenharJogador();
-            DrawText(TextFormat("Muito bem! Aguarde: %.1f segundos...", TEMPO_ESPERA - temporizadorFase), 10, 10, 20, WHITE);
+            sprintf(textoTempo, "Tempo: %.2f", tempoTotalPartida);
+            DrawText(textoTempo, 20, 20, 30, WHITE);
             break;
 
         case FASE_2:
         case ESPERA_F2:
-            if(texFase2.id != 0) DrawTexture(texFase2, 0, 0, WHITE);
+            DrawTexture(texFase2, 0, 0, WHITE);
             DesenharJogador();
+            sprintf(textoTempo, "Tempo: %.2f", tempoTotalPartida);
             DesenharInimigos();
-            DrawText(TextFormat("FASE 2 (Campo) - Aguarde: %.1f segundos...", TEMPO_ESPERA - temporizadorFase), 10, 10, 20, BLACK);
+            DrawText(textoTempo, 20, 20, 30, WHITE);
             break;
 
         case FASE_3:
         case ESPERA_F3:
-            if(texFase3.id != 0) DrawTexture(texFase3, 0, 0, WHITE);
-            DrawText(TextFormat("FASE 3 (Piso) - Aguarde: %.1f segundos...", TEMPO_ESPERA - temporizadorFase), 10, 10, 20, BLACK);
+            DrawTexture(texFase3, 0, 0, WHITE);
             DesenharJogador();
+            sprintf(textoTempo, "Tempo: %.2f", tempoTotalPartida);
+            DrawText(textoTempo, 20, 20, 30, WHITE);
             break;
-    }
-
-    // Se alguma textura falhou, avisa na tela
-    if (texPersonagem.id == 0 || texTelaInicial.id == 0 || texFase1.id == 0) {
-         DrawText("ERRO: Imagens nao encontradas na pasta do executavel!", 10, 400, 20, RED);
     }
 
     EndDrawing();
@@ -390,10 +443,12 @@ void DesenharJogo() {
 void DescarregarRecursos() {
     UnloadTexture(texTelaInicial);
     UnloadTexture(texPersonagem);
+    UnloadTexture(texAtaque);
     UnloadTexture(texFase1);
     UnloadTexture(texFase2);
     UnloadTexture(texFase3);
     UnloadTexture(texInimigo);
     LiberarInimigos();
 }
+
 

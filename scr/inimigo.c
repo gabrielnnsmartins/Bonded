@@ -138,6 +138,34 @@ void VerificarColisao(Rectangle player) {
 
 
 //  Liberar tudo da memória
+// Implementação em inimigo.c
+
+void VerificarColisaoAtaque(Rectangle hitbox, int dano) {
+    Inimigo *atual = ListaInimigo;
+
+    while (atual != NULL) {
+        // 1. Criar o retângulo de colisão do inimigo
+        Rectangle rIn = {
+            atual->posicao.x,
+            atual->posicao.y,
+            (float)larguraFrameInimigo,
+            (float)alturaFrameInimigo
+        };
+
+        // 2. Checar a colisão entre o ataque e o inimigo
+        if (CheckCollisionRecs(hitbox, rIn)) {
+            // 3. Aplicar o dano
+            atual->vida -= dano;
+
+            // Opcional: Se você quiser que o ataque pare após atingir o primeiro inimigo,
+            // você pode adicionar 'break;' ou 'return;' aqui.
+            // Se o ataque deve atingir TODOS os inimigos na área, remova o 'return'.
+            return; 
+        }
+
+        atual = atual->next;
+    }
+}
 
 void LiberarInimigos() {
     Inimigo *atual = ListaInimigo;
