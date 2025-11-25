@@ -1,5 +1,8 @@
 #include "raylib.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include "inimigo.h"
 
 // --- Definições de Estados do Jogo ---
 typedef enum {
@@ -27,19 +30,26 @@ typedef struct {
     bool moveuBaixo;
 } Jogador;
 
+
+
 // --- Variáveis Globais ---
 EstadoJogo estadoAtual = TELA_INICIAL;
 Texture2D texTelaInicial, texPersonagem, texFase1, texFase2, texFase3;
+Texture2D texInimigo;
+
 Jogador player;
 float temporizadorFase = 0.0f;
 const float TEMPO_ESPERA = 20.0f;
 Rectangle rectBotaoStart; // Retângulo de colisão para o botão START
 
+
 // --- Constantes de Animação ---
 const int NUM_FRAMES = 6;
+const int NUM_FRAMES_INIMIGOS = 4;
 const float VELOCIDADE_ANIMACAO = 0.1f; // Tempo por frame
 int larguraFrame;
 int alturaFrame;
+
 
 // --- Protótipos de Funções ---
 void InicializarJogo();
@@ -49,6 +59,7 @@ void DescarregarRecursos();
 void AtualizarJogador();
 void DesenharJogador();
 void ResetarJogador();
+Rectangle GetPlayerRec();
 
 int main() {
     // Inicialização da Janela
@@ -72,21 +83,34 @@ int main() {
     return 0;
 }
 
+Rectangle GetPlayerRec(){
+    Rectangle rec =
+    {
+        player.posicao.x,
+        player.posicao.y,
+        (float)larguraFrame,
+        (float)alturaFrame
+    };
+    return rec;
+}
+
 // --- Implementação das Funções ---
 
 void InicializarJogo() {
     // --- CARREGAMENTO DAS SUAS IMAGENS ---
     // O código procura estes arquivos na mesma pasta onde o executável do jogo estiver.
     
-    texTelaInicial = LoadTexture("tela_de_inicio.jpg");
+    texTelaInicial = LoadTexture("scr/tela_de_inicio.jpg");
     
     // ATENÇÃO: Renomeie seu arquivo de sprite sheet para "personagem.png"
-    texPersonagem = LoadTexture("personagem.png"); 
+    texPersonagem = LoadTexture("scr/personagem.png"); 
     
     // Carregando os cenários conforme a numeração dos seus arquivos
-    texFase1 = LoadTexture("Fase1.jpg"); // Parede de tijolos
-    texFase2 = LoadTexture("Fase2.jpg"); // Campo verde
-    texFase3 = LoadTexture("Fase3.jpg"); // Piso quadriculado
+    texFase1 = LoadTexture("scr/Fase1.jpg"); // Parede de tijolos
+    texFase2 = LoadTexture("scr/Fase2.jpg"); // Campo verde
+    texFase3 = LoadTexture("scr/Fase3.jpg"); //Piso quadriculado
+
+    texInimigo = LoadTexture("scr/Inimigo.jpg"); // FALTA COLOCAR
 
     // Verificação de segurança: se a imagem da personagem não carregar, evita crash
     if (texPersonagem.id == 0) {
@@ -97,6 +121,16 @@ void InicializarJogo() {
         // Configurar Animação baseada no tamanho da imagem carregada
         larguraFrame = texPersonagem.width / NUM_FRAMES;
         alturaFrame = texPersonagem.height;
+    }
+
+    if (texInimigo.id == 0) {
+        TraceLog(LOG_WARNING, "ERRO: Nao foi possivel carregar 'Inimigo.png'. Verifique o nome do arquivo.");
+         larguraFrameInimigo= 32; // Valores padrão para não travar
+         alturaFrameInimigo = 32;
+    } else {
+        // Configurar Animação baseada no tamanho da imagem carregada
+        larguraFrameInimigo = texInimigo.width / NUM_FRAMES_INIMIGOS;
+        alturaFrameInimigo= texInimigo.height;
     }
 
 
@@ -125,6 +159,7 @@ void ResetarJogador() {
 }
 
 void AtualizarJogo() {
+    extern Inimigo *ListaInimigo;
     switch (estadoAtual) {
         case TELA_INICIAL:
             // Verificar clique no botão START com o mouse
@@ -158,28 +193,55 @@ void AtualizarJogo() {
             if (temporizadorFase >= TEMPO_ESPERA) {
                 estadoAtual = FASE_2;
                 ResetarJogador();
+                temporizadorFase = 0.0f;
+
+                AdicionarInimigo((Vector2){1000, 500}, 150.0f, 100);
+                AdicionarInimigo((Vector2){100, 50}, 180.0f, 100);
+
             }
             break;
 
         case FASE_2:
             // A fase 2 começa a contar o tempo imediatamente
-            estadoAtual = ESPERA_F2;
-            temporizadorFase = 0.0f;
+
+            AtualizarJogador();
+            AtualizarInimigos(player.posicao,GetFrameTime());
+            VerificarColisao(GetPlayerRec());
+
+            if (total_inimigos_vivos == 0){ //mudei ListaInimigo == NULL
+
+                estadoAtual = ESPERA_F2;
+                temporizadorFase = 0.0f;
+                ResetarJogador();
+    
+                break;
+            }
+
+            temporizadorFase += GetFrameTime();
+            if (temporizadorFase >= TEMPO_ESPERA) {
+                estadoAtual = ESPERA_F2;
+                ResetarJogador();
+                
+            }
             break;
+
 
         case ESPERA_F2:
             AtualizarJogador();
+
             temporizadorFase += GetFrameTime();
             if (temporizadorFase >= TEMPO_ESPERA) {
                 estadoAtual = FASE_3;
                 ResetarJogador();
+                LiberarInimigos();
             }
-            break;
+            break; 
 
         case FASE_3:
             // A fase 3 começa a contar o tempo imediatamente
             estadoAtual = ESPERA_F3;
             temporizadorFase = 0.0f;
+            //adcionar chefao ou obstaculo final;
             break;
 
         case ESPERA_F3:
@@ -188,6 +250,7 @@ void AtualizarJogo() {
             if (temporizadorFase >= TEMPO_ESPERA) {
                 estadoAtual = TELA_INICIAL; // Volta para o início
                 ResetarJogador();
+                LiberarInimigos();
             }
             break;
     }
@@ -237,10 +300,11 @@ void AtualizarJogador() {
 
     //RESTRIÇÃO DE 506 PX
     // Se a posição Y tentar ser maior que 506, força a ser 506.
+
     if (player.posicao.y < 105) {
         player.posicao.y = 105;
-        }
-
+    }
+ 
     // Lógica de Animação
     player.tempoAnimacao += GetFrameTime();
     if (player.tempoAnimacao >= VELOCIDADE_ANIMACAO) {
@@ -303,6 +367,7 @@ void DesenharJogo() {
         case ESPERA_F2:
             if(texFase2.id != 0) DrawTexture(texFase2, 0, 0, WHITE);
             DesenharJogador();
+            DesenharInimigos();
             DrawText(TextFormat("FASE 2 (Campo) - Aguarde: %.1f segundos...", TEMPO_ESPERA - temporizadorFase), 10, 10, 20, BLACK);
             break;
 
@@ -328,4 +393,7 @@ void DescarregarRecursos() {
     UnloadTexture(texFase1);
     UnloadTexture(texFase2);
     UnloadTexture(texFase3);
+    UnloadTexture(texInimigo);
+    LiberarInimigos();
 }
+
