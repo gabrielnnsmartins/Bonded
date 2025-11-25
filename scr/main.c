@@ -25,6 +25,7 @@ typedef struct {
     bool atacando;
     float tempoAtaque;
     int ultimaDirecaoHorizontal;
+    
 } Jogador;
 
 typedef struct {
@@ -39,6 +40,8 @@ Jogador player;
 float temporizadorFase = 0.0f;
 const float TEMPO_ESPERA = 20.0f;
 Rectangle rectBotaoStart;
+float tempoTotalPartida = 0.0f;
+bool partidaEmAndamento = false;
 
 const int NUM_FRAMES = 6;
 const float VELOCIDADE_ANIMACAO = 0.1f;
@@ -50,6 +53,54 @@ const int DANO_ATAQUE = 50;
 const float ALCANCE_ATAQUE = 80.0f;
 int larguraFrameAtaque = 120;
 int alturaFrameAtaque;
+
+float temposLeaderboard[5];
+int totalTempos = 0;
+bool mostrarLeaderboard = false;
+float ultimoTempo = 0.0f;
+
+
+void SalvarLeaderboard(float tempoFinal) {
+    float tempos[6];
+    int count = 0;
+
+    FILE *f = fopen("leaderboard.txt", "r");
+    if (f != NULL) {
+        while (count < 5 && fscanf(f, "%f", &tempos[count]) == 1) count++;
+        fclose(f);
+    }
+
+    tempos[count++] = tempoFinal;
+
+    for (int i = 0; i < count - 1; i++) {
+        for (int j = i + 1; j < count; j++) {
+            if (tempos[i] > tempos[j]) {
+                float aux = tempos[i];
+                tempos[i] = tempos[j];
+                tempos[j] = aux;
+            }
+        }
+    }
+
+    if (count > 5) count = 5;
+
+    f = fopen("leaderboard.txt", "w");
+    for (int i = 0; i < count; i++) fprintf(f, "%.2f\n", tempos[i]);
+    fclose(f);
+}
+
+void CarregarLeaderboard() {
+    totalTempos = 0;
+    FILE *f = fopen("leaderboard.txt", "r");
+    if (f != NULL) {
+        while (totalTempos < 5 && fscanf(f, "%f", &temposLeaderboard[totalTempos]) == 1) {
+            totalTempos++;
+        }
+        fclose(f);
+    }
+}
+
+
 
 void InicializarJogo();
 void AtualizarJogo();
@@ -64,7 +115,7 @@ Rectangle ObterHitboxAtaque();
 int main() {
     const int larguraTela = 1280;
     const int alturaTela = 720;
-    InitWindow(larguraTela, alturaTela, "Jogo da Cavaleira - Raylib Local");
+    InitWindow(larguraTela, alturaTela, "Bonded");
     SetTargetFPS(60);
 
     InicializarJogo();
@@ -113,18 +164,14 @@ void ResetarJogador() {
 }
 
 void AtualizarJogo() {
+    if (partidaEmAndamento) tempoTotalPartida += GetFrameTime();
     switch (estadoAtual) {
         case TELA_INICIAL:
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-                Vector2 mousePos = GetMousePosition();
-                if (CheckCollisionPointRec(mousePos, rectBotaoStart)) {
-                    estadoAtual = FASE_1;
-                    ResetarJogador();
-                }
-            }
             if (IsKeyPressed(KEY_SPACE)) {
                 estadoAtual = FASE_1;
                 ResetarJogador();
+                tempoTotalPartida = 0.0f;
+                partidaEmAndamento = true;
             }
             break;
 
@@ -168,6 +215,9 @@ void AtualizarJogo() {
             AtualizarJogador();
             temporizadorFase += GetFrameTime();
             if (temporizadorFase >= TEMPO_ESPERA) {
+                partidaEmAndamento = false;
+                ultimoTempo = tempoTotalPartida;
+                SalvarLeaderboard(tempoTotalPartida);
                 estadoAtual = TELA_INICIAL;
                 ResetarJogador();
             }
@@ -277,33 +327,58 @@ void DesenharJogador() {
 void DesenharJogo() {
     BeginDrawing();
     ClearBackground(RAYWHITE);
+    char textoTempo[64];
 
     switch (estadoAtual) {
         case TELA_INICIAL:
             if (texTelaInicial.id != 0) DrawTexture(texTelaInicial, 0, 0, WHITE);
-            DrawText("Pressione ESPACO ou clique em START para iniciar", 350, 650, 20, WHITE);
+            DrawText("Pressione ESPACO para iniciar", 350, 650, 20, WHITE);
+            CarregarLeaderboard();
+
+            DrawText("TOP 5 MELHORES TEMPOS:", 50, 50, 30, YELLOW);
+
+            for (int i = 0; i < totalTempos; i++) {
+                char linha[64];
+                sprintf(linha, "%dº - %.2f segundos", i+1, temposLeaderboard[i]);
+                DrawText(linha, 50, 100 + i * 40, 25, WHITE);
+            }
+
+            if (ultimoTempo > 0) {
+                char msgFinal[64];
+                sprintf(msgFinal, "SEU ULTIMO TEMPO: %.2f segundos", ultimoTempo);
+                DrawText(msgFinal, 50, 350, 28, GREEN);
+            }
+
             break;
 
         case FASE_1:
             DrawTexture(texFase1, 0, 0, WHITE);
             DesenharJogador();
+            sprintf(textoTempo, "Tempo: %.2f", tempoTotalPartida);
+            DrawText(textoTempo, 20, 20, 30, WHITE);
             break;
 
         case ESPERA_F1:
             DrawTexture(texFase1, 0, 0, WHITE);
             DesenharJogador();
+            sprintf(textoTempo, "Tempo: %.2f", tempoTotalPartida);
+            DrawText(textoTempo, 20, 20, 30, WHITE);
             break;
 
         case FASE_2:
         case ESPERA_F2:
             DrawTexture(texFase2, 0, 0, WHITE);
             DesenharJogador();
+            sprintf(textoTempo, "Tempo: %.2f", tempoTotalPartida);
+            DrawText(textoTempo, 20, 20, 30, WHITE);
             break;
 
         case FASE_3:
         case ESPERA_F3:
             DrawTexture(texFase3, 0, 0, WHITE);
             DesenharJogador();
+            sprintf(textoTempo, "Tempo: %.2f", tempoTotalPartida);
+            DrawText(textoTempo, 20, 20, 30, WHITE);
             break;
     }
 
