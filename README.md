@@ -7,7 +7,7 @@
 </p>
 
 ## Demonstração de Gameplay
-[em progresso] 
+https://www.youtube.com/watch?v=COAaJi_CWt4
 ### Ajustes e melhorias
 
 O projeto ainda está em desenvolvimento e as próximas atualizações serão voltadas para as seguintes tarefas:
