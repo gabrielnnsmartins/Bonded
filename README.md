@@ -29,27 +29,27 @@ Antes de começar, verifique se você atendeu aos seguintes requisitos:
 ## 🚀 Instalando Bonded
 
 Para instalar o Bonded, siga estas etapas:
-      ##1. Clone o repositório
-           -git clone  https://github.com/gabrielnnsmartins/Bonded
-      ##2. Instale as dependências do Raylib (Linux/Ubuntu)
-           -sudo apt update
-           -sudo apt install build-essential git cmake pkg-config libgl1-mesa-dev libx11-dev libxcursor-dev libxrandr-dev libxi-dev libasound2-dev libopenal-dev
-           -sudo apt install -y libx11-dev libxrandr-dev libxi-dev libxinerama-dev libxcursor-dev libxext-dev libxfixes-dev libgl1-mesa-dev libglu1-mesa-dev
-      ##3. Compile a Raylib (caso ainda não tenha instalado)
-           - git clone https://github.com/raysan5/raylib.git raylib
-           - cd raylib/src
-           -sudo make install
-           -make
-           -cd ../..
-     ##4. Compilar e executar o projeto
-           - Make
-           - Make run
+      ## 1. Clone o repositório  
+           -git clone  https://github.com/gabrielnnsmartins/Bonded  
+      ## 2. Instale as dependências do Raylib (Linux/Ubuntu)   
+           -sudo apt update  
+           -sudo apt install build-essential git cmake pkg-config libgl1-mesa-dev libx11-dev libxcursor-dev libxrandr-dev libxi-dev libasound2-dev libopenal-dev   
+           -sudo apt install -y libx11-dev libxrandr-dev libxi-dev libxinerama-dev libxcursor-dev libxext-dev libxfixes-dev libgl1-mesa-dev libglu1-mesa-dev   
+      ## 3. Compile a Raylib (caso ainda não tenha instalado)   
+           - git clone https://github.com/raysan5/raylib.git raylib   
+           - cd raylib/src   
+           -sudo make install   
+           -make   
+           -cd ../..   
+     ## 4. Compilar e executar o projeto  
+           - Make  
+           - Make run  
 
 ## ☕ Usando Bonded
 
 Para usar Bonded, siga estas etapas:
-    ##make run
-    ##./bonded
+    ## make run  
+    ## ./bonded  
 
 ## 🤝 Colaboradores
 
