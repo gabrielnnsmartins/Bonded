@@ -12,9 +12,13 @@
 
 O projeto ainda está em desenvolvimento e as próximas atualizações serão voltadas para as seguintes tarefas:
 
-- [ ] Criação de Sprites / Arte
-- [ ] Desenvolvimento da 1 Fase
+- [ ] Criação de mais Sprites / Arte
+- [ ] Cutscene Inicial
 - [ ] Implementação de musica/sound effects
+- [ ] Adição de dialogos e historia
+- [ ] Implementação de sistema de inventario, upgrades e lojas
+- [ ] Implementar um chefão para a fase final
+- [ ] Futuro distante: mais fases, desafios, final concreto para o jogo e lançamento no itch.io
 
 ## 💻 Pré-requisitos
 
