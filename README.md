@@ -12,9 +12,13 @@
 
 O projeto ainda está em desenvolvimento e as próximas atualizações serão voltadas para as seguintes tarefas:
 
-- [ ] Criação de Sprites / Arte
-- [ ] Desenvolvimento da 1 Fase
+- [ ] Criação de mais Sprites / Arte
+- [ ] Cutscene Inicial
 - [ ] Implementação de musica/sound effects
+- [ ] Adição de dialogos e historia
+- [ ] Implementação de sistema de inventario, upgrades e lojas
+- [ ] Implementar um chefão para a fase final
+- [ ] Futuro distante: mais fases, desafios, final concreto para o jogo e lançamento no itch.io
 
 ## 💻 Pré-requisitos
 
@@ -24,13 +28,28 @@ Antes de começar, verifique se você atendeu aos seguintes requisitos:
 
 ## 🚀 Instalando Bonded
 
-Para instalar o Bonded, siga estas etapas:
-[em progresso]
+Para instalar o Bonded, siga estas etapas:  
+      **1. Clone o repositório**  
+           -git clone  https://github.com/gabrielnnsmartins/Bonded  
+      **2. Instale as dependências do Raylib (Linux/Ubuntu)**   
+           -sudo apt update  
+           -sudo apt install build-essential git cmake pkg-config libgl1-mesa-dev libx11-dev libxcursor-dev libxrandr-dev libxi-dev libasound2-dev libopenal-dev   
+           -sudo apt install -y libx11-dev libxrandr-dev libxi-dev libxinerama-dev libxcursor-dev libxext-dev libxfixes-dev libgl1-mesa-dev libglu1-mesa-dev   
+      **3. Compile a Raylib (caso ainda não tenha instalado)**  
+           - git clone https://github.com/raysan5/raylib.git raylib   
+           - cd raylib/src   
+           -sudo make install   
+           -make   
+           -cd ../..   
+     **4. Compilar e executar o projeto**  
+           - Make  
+           - Make run  
 
 ## ☕ Usando Bonded
 
-Para usar Bonded, siga estas etapas:
-[em progresso]
+Para usar Bonded, siga estas etapas:  
+    **make run** 
+    **./bonded** 
 
 ## 🤝 Colaboradores
 

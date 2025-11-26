@@ -2,11 +2,10 @@
 #include "jogador.h"
 #include <stdio.h>
 
-//Inicia o jogador na tela, com sua posição, textura e hp
+// Inicia o jogador na tela
 void iniciar_jogador(Jogador *j, const char *spritePath) {
-
-    j->x= 100;
-    j->y= 100;
+    j->x = 100;
+    j->y = 100;
     j->hp = 100;
 
     j->spritePath = spritePath;
@@ -46,11 +45,9 @@ void iniciar_jogador(Jogador *j, const char *spritePath) {
     j-> ataqueprocessado = false;
 }
 
-// atualiza os frames fazendo a animação
+// Atualiza animações e timers (Removi a lógica de colisão errada daqui)
 void atualizar_jogador(Jogador *j){
-
     if (j->atacando){
-
         j->tempoataque += GetFrameTime();
         if (j->tempoataque >= j->duracaoataque)
         {
@@ -58,32 +55,28 @@ void atualizar_jogador(Jogador *j){
             j->tempoataque = 0.0f;
             j->ataqueprocessado = false;
         }
-        return;
+        return; 
     }
 
     if (j->movendo){
-
         float tempoframe = GetFrameTime();
         j->tempoanimacao += tempoframe;
 
         if (j->tempoanimacao >= j->framedelay){
             j->tempoanimacao = 0.0f;
-
             j->frameatual++;
 
-            if (j->frameatual >= j->numframes /2){
+            if (j->frameatual >= j->numframes / 2){
                 j->frameatual = 0;
             }
         }
     } else {
-
         j->frameatual = 0;
         j->tempoanimacao= 0.0f;
     }
 }
 
 void atacar (Jogador *j){
-
     if (!j->atacando){
         j->atacando = true;
         j->tempoataque = 0.0f;
@@ -91,14 +84,13 @@ void atacar (Jogador *j){
     }
 }
 
-//atualiza a posição do jogador, fazendo ele mover
+// Atualiza a posição e APHERE (AQUI) aplicamos os limites da tela
 void mover_jogador(Jogador *j){
-
     int velocidade = 4;
     int nx = j->x;
     int ny = j->y;
 
-    if(j->atacando)return;
+    if(j->atacando) return;
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
     {
@@ -106,7 +98,6 @@ void mover_jogador(Jogador *j){
         return;
     }
     
-
     j->movendo = false;
 
     if (IsKeyDown(KEY_W)) ny -= velocidade;
@@ -125,41 +116,46 @@ void mover_jogador(Jogador *j){
         j->movendo = true;
     }
 
+    // Aplica a nova posição temporariamente
     j->x = nx;
     j->y = ny;
 
+    // --- LÓGICA DE LIMITES DA TELA ---
+    // Ajustada para usar as variáveis da struct 'j' (x, y, framelargura)
+    
+    // Teto (Horizonte em 105px)
+    if (j->y < 105) j->y = 105;
+
+    // Chão (720px - altura da imagem)
+    if (j->y > 720 - j->sprite.height) j->y = 720 - j->sprite.height;
+
+    // Parede Esquerda (0)
+    if (j->x < 0) j->x = 0;
+
+    // Parede Direita (1280px - largura do frame atual)
+    if (j->x > 1280 - j->framelargura) j->x = 1280 - j->framelargura;
+    // ---------------------------------
+
+    // Atualiza a hitbox com a posição final corrigida
     j->hitbox.x = (float)j->x;
     j->hitbox.y = (float)j->y;
-
 }
 
-//Põe o jogador com textura na tela
 void desenhar_jogador(const Jogador *j){
-
     int offset_frame_parado = ((j->ultimadirecaoH == 1) ? 3 : 0);
-
     int frameIndex;
 
     if(j->atacando){
-
-        int frame = (j->ultimadirecaoH == 1) ? 1 : 0;
-
-        Rectangle srcRec = {
-            frame * j->larguraframeataque,
-            0,
-            j->larguraframeataque,
-            j->alturaframeataque
+        float offsetX = (j->ultimadirecaoH == 1) ? j->framelargura : -j->larguraframeataque;
+        Rectangle destRec = {
+            (float)j->x + offsetX,
+            (float)j->y,
+            (float)j->larguraframeataque,
+            (float)j->alturaframeataque
         };
 
         float drawX = j->x + (j->ultimadirecaoH == 1 ? j->framelargura : -j->larguraframeataque);
         float drawY = j->y;
-
-        DrawTextureRec(
-            j->spriteataque,
-            srcRec,
-            (Vector2){ drawX, drawY},
-            WHITE
-        );
 
         return;
     }
@@ -171,7 +167,6 @@ void desenhar_jogador(const Jogador *j){
     }
 
     Rectangle frameSource ={
-
         (float)(frameIndex * j->framelargura),
         0.0f,
         (float)j->framelargura,
@@ -179,7 +174,6 @@ void desenhar_jogador(const Jogador *j){
     };
 
     Rectangle frameDestino ={
-
         (float)j->x,
         (float)j->y,
         (float)j->framelargura,
@@ -194,10 +188,8 @@ void desenhar_jogador(const Jogador *j){
         0.0f,
         WHITE
     );
-
 }
 
-// some com o jogador
 void unload_jogador(Jogador *j){
     UnloadTexture(j->sprite);
     if (j->spriteataque.id != 0) UnloadTexture(j->spriteataque);
