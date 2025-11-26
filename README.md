@@ -29,7 +29,7 @@ Antes de começar, verifique se você atendeu aos seguintes requisitos:
 ## 🚀 Instalando Bonded
 
 Para instalar o Bonded, siga estas etapas:  
-      **1. Clone o repositório** 
+      **1. Clone o repositório**  
            -git clone  https://github.com/gabrielnnsmartins/Bonded  
       **2. Instale as dependências do Raylib (Linux/Ubuntu)**   
            -sudo apt update  
@@ -41,7 +41,7 @@ Para instalar o Bonded, siga estas etapas:
            -sudo make install   
            -make   
            -cd ../..   
-     **4. Compilar e executar o projeto**
+     **4. Compilar e executar o projeto**  
            - Make  
            - Make run  
 
