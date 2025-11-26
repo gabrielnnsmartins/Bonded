@@ -164,9 +164,9 @@ void desenhar_jogador(const Jogador *j){
     }
 
     if (j->movendo){
-        frameIndex = offset_frame_parado;
-    } else {
         frameIndex = j->frameatual + ((j->ultimadirecaoH == 1) ? 3 : 0);
+    } else {
+        frameIndex = offset_frame_parado;
     }
 
     Rectangle frameSource = {
