@@ -3,6 +3,7 @@
 
 #include "raylib.h"
 #include <stdbool.h>
+#include "jogador.h"
 
 typedef struct Inimigo {
     Vector2 pos;
@@ -33,7 +34,7 @@ void RemoverInimigosInativos();
 void DesenharInimigos();
 void LiberarInimigos();
 
-void VerificarColisao(Rectangle player);
+void VerificarColisao(Rectangle hitbox, Jogador *j);
 void VerificarColisaoAtaque(Rectangle hitbox, int dano);
 
 #endif

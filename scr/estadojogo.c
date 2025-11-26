@@ -187,7 +187,7 @@ void Estado_Update(void) {
 
         Vector2 posJogador = { (float)j.x, (float)j.y };
         AtualizarInimigos(posJogador, delta);
-        VerificarColisao(j.hitbox);
+        VerificarColisao(j.hitbox, &j);
 
         if (j.atacando && !j.ataqueprocessado) {
             Rectangle hitboxAtaque = {
