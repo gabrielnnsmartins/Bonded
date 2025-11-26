@@ -4,6 +4,7 @@
 #include "raylib.h"
 #include "jogador.h"
 #include <stdbool.h>
+#include "jogador.h"
 
 typedef struct Inimigo {
     Vector2 pos;

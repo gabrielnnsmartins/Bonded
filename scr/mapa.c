@@ -31,6 +31,11 @@ void DesenharMapa(){
         for (int x = 0; x < Mapa_Largura; x++)
         {
             int tile = MAPA[y][x];
+            if (tile == 1) {
+                DrawRectangle(x * Tile_Tamanho, y * Tile_Tamanho, Tile_Tamanho, Tile_Tamanho, DARKGRAY);
+            } else {
+                DrawRectangle(x * Tile_Tamanho, y * Tile_Tamanho, Tile_Tamanho, Tile_Tamanho, LIGHTGRAY);
+            }
         }
         
     }
