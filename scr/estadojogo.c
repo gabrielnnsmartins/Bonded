@@ -3,6 +3,7 @@
 #include "inimigo.h"
 #include "leaderboard.h"
 #include <stdio.h>
+#include "mapa.h"
 
 #define TEMPO_LIMITE_PADRAO 120.0f
 
@@ -40,7 +41,7 @@ parametroFase parametroFases[6] = {
 void Estado_Iniciar(void) {
     
     imgTELA_INICIAL = LoadTexture("assets/tela_de_inicio.jpg");
-    imgFase[1] = LoadTexture("assets/Fase1.jpg");
+    imgFase[1] = LoadTexture("assets/Fase2.jpg");
     imgFase[2] = LoadTexture("assets/Fase2.jpg");
     imgFase[3] = LoadTexture("assets/Fase34.jpg");
     imgFase[4] = LoadTexture("assets/Fase34.jpg");

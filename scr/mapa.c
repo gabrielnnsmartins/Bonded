@@ -1,9 +1,10 @@
-/*#include "mapa.h"
+#include "mapa.h"
+#include "raylib.h"
 
-int MAPA[Mapa_Altura][Mapa_Largura] = {0};
+int MAPA[Mapa_Altura][Mapa_Largura] = {0}; 
 
 void CarregarMapa(){
-
+    
     for (int y = 0; y < Mapa_Altura; y++)
     {
         for (int x = 0; x < Mapa_Largura; x++)
@@ -21,23 +22,44 @@ void CarregarMapa(){
     for (int y = 0; y < Mapa_Altura; y++)
     {
         MAPA[y][0] = 1;
-        MAPA[y][Mapa_Largura - 1] = 1;
-    }   
+        MAPA[y][Mapa_Largura - 1] = 1; 
+    }
 }
 
 void DesenharMapa(){
+
     for (int y = 0; y < Mapa_Altura; y++)
     {
         for (int x = 0; x < Mapa_Largura; x++)
         {
             int tile = MAPA[y][x];
-            if (tile == 1) {
-                DrawRectangle(x * Tile_Tamanho, y * Tile_Tamanho, Tile_Tamanho, Tile_Tamanho, DARKGRAY);
-            } else {
-                DrawRectangle(x * Tile_Tamanho, y * Tile_Tamanho, Tile_Tamanho, Tile_Tamanho, LIGHTGRAY);
+            
+            if (tile == 1) { 
+                DrawRectangle(
+                    x * TAMANHO_TILE,
+                    y * TAMANHO_TILE,
+                    TAMANHO_TILE,
+                    TAMANHO_TILE,
+                    BROWN 
+                );
             }
         }
-        
+    }
+}
+
+bool VerificarColisaoMapa(int x_pixel, int y_pixel) {
+    
+    int tile_x = x_pixel / TAMANHO_TILE;
+    int tile_y = y_pixel / TAMANHO_TILE;
+
+    if (tile_x < 0 || tile_x >= Mapa_Largura || 
+        tile_y < 0 || tile_y >= Mapa_Altura) {
+        return true; 
+    }
+
+    if (MAPA[tile_y][tile_x] == 1) { 
+        return true; 
     }
     
-}*/
+    return false; 
+}

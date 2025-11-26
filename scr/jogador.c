@@ -1,6 +1,7 @@
 #include <raylib.h>
 #include "jogador.h"
 #include <stdio.h>
+#include "mapa.h"
 
 void iniciar_jogador(Jogador *j, const char *spritePath) {
     j->x = 100;
@@ -54,8 +55,9 @@ void atualizar_jogador(Jogador *j){
             j->tempoataque = 0.0f;
             j->ataqueprocessado = false;
         }
-        return; 
+        return;
     }
+
 
     if (j->movendo){
         float tempoframe = GetFrameTime();
@@ -76,7 +78,7 @@ void atualizar_jogador(Jogador *j){
 }
 
 void atacar (Jogador *j){
-    if (!j->atacando){
+    if (!j->atacando) {
         j->atacando = true;
         j->tempoataque = 0.0f;
         j->ataqueprocessado = false;
@@ -114,6 +116,14 @@ void mover_jogador(Jogador *j){
         j->movendo = true;
     }
 
+    if (!VerificarColisaoMapa(nx, j->y)) {
+        j->x = nx;
+    }
+
+    if (!VerificarColisaoMapa(j->x, ny)) {
+        j->y = ny;
+    }
+
     j->x = nx;
     j->y = ny;
 
@@ -124,54 +134,39 @@ void mover_jogador(Jogador *j){
     if (j->x < 0) j->x = 0;
 
     if (j->x > 1280 - j->framelargura) j->x = 1280 - j->framelargura;
-
+    
     j->hitbox.x = (float)j->x;
     j->hitbox.y = (float)j->y;
 }
 
 void desenhar_jogador(const Jogador *j){
-    if(j->atacando){
-        float xSource = 0.0f;
-        
-        if (j->ultimadirecaoH == -1) {
-            xSource = 0.0f;
-        } else {
-            xSource = (float)j->larguraframeataque;
-        }
-
-        Rectangle frameSource = {
-            xSource, 
-            0.0f, 
-            (float)j->larguraframeataque, 
-            (float)j->alturaframeataque   
-        };
-
-        Rectangle frameDestino = {
-            (float)j->x,
-            (float)j->y,
-            (float)j->larguraframeataque,
-            (float)j->alturaframeataque
-        };
-
-        DrawTexturePro(
-            j->spriteataque,
-            frameSource,
-            frameDestino,
-            (Vector2){0, 0},
-            0.0f,
-            WHITE
-        );
-
-        return; 
-    }
-
     int offset_frame_parado = ((j->ultimadirecaoH == 1) ? 3 : 0);
     int frameIndex;
 
+    if (j->atacando) {
+
+        int frame = (j->ultimadirecaoH == 1 ? 0 : 1);
+
+        Rectangle src = {
+            frame * j->larguraframeataque,
+            0,
+            j->larguraframeataque,
+            j->alturaframeataque
+        };
+
+        Vector2 pos = {
+            j->x - (j->larguraframeataque - j->framelargura) / 2,
+            j->y - (j->alturaframeataque - j->sprite.height) / 2
+        };
+
+        DrawTextureRec(j->spriteataque, src, pos, WHITE);
+        return;  
+    }
+
     if (j->movendo){
-        frameIndex = j->frameatual + ((j->ultimadirecaoH == 1) ? 3 : 0);
-    } else {
         frameIndex = offset_frame_parado;
+    } else {
+        frameIndex = j->frameatual + ((j->ultimadirecaoH == 1) ? 3 : 0);
     }
 
     Rectangle frameSource = {

@@ -1,18 +1,18 @@
-/*#ifndef Mapa_h
-#define Mapa_h
+#ifndef MAPA_H
+#define MAPA_H
 
-#include<raylib.h>
-#include<stdbool.h>
+#include <stdbool.h>
 
-#define Mapa_Largura 20
-#define Mapa_Altura 15
-#define Tile_Tamanho 48
+#define Mapa_Largura 40 
+#define Mapa_Altura 23 
+
+
+#define TAMANHO_TILE 32 
 
 extern int MAPA[Mapa_Altura][Mapa_Largura];
 
 void CarregarMapa();
 void DesenharMapa();
-bool Mapa_TileSolido(int tx, int ty);
-bool Mapa_ChecarColisaoJogador(int nx, int ny, int largura, int altura);
+bool VerificarColisaoMapa(int x_pixel, int y_pixel);
 
-#endif*/
+#endif 

@@ -3,6 +3,7 @@
 #include "estadojogo.h"
 #include "inimigo.h"
 #include "leaderboard.h"
+#include "mapa.h"
 
 Jogador j; 
 
@@ -24,6 +25,7 @@ int main(void) {
     SetTargetFPS(60);
 
     Estado_Iniciar();
+    CarregarMapa();
     iniciar_jogador(&j, "assets/personagem.png");
     CarregarInimigoTex("assets/Inimigo.png"); 
     CarregarLeaderboard();
@@ -34,7 +36,7 @@ int main(void) {
         
         BeginDrawing();
         ClearBackground(RAYWHITE);
-
+        DesenharMapa();
         Estado_Desenhar();
 
         EndDrawing();
