@@ -2,7 +2,6 @@
 #include "jogador.h"
 #include <stdio.h>
 
-// Inicia o jogador na tela
 void iniciar_jogador(Jogador *j, const char *spritePath) {
     j->x = 100;
     j->y = 100;
@@ -45,7 +44,6 @@ void iniciar_jogador(Jogador *j, const char *spritePath) {
     j-> ataqueprocessado = false;
 }
 
-// Atualiza animações e timers (Removi a lógica de colisão errada daqui)
 void atualizar_jogador(Jogador *j){
     if (j->atacando){
         j->tempoataque += GetFrameTime();
@@ -84,7 +82,6 @@ void atacar (Jogador *j){
     }
 }
 
-// Atualiza a posição e APHERE (AQUI) aplicamos os limites da tela
 void mover_jogador(Jogador *j){
     int velocidade = 4;
     int nx = j->x;
@@ -116,27 +113,17 @@ void mover_jogador(Jogador *j){
         j->movendo = true;
     }
 
-    // Aplica a nova posição temporariamente
     j->x = nx;
     j->y = ny;
 
-    // --- LÓGICA DE LIMITES DA TELA ---
-    // Ajustada para usar as variáveis da struct 'j' (x, y, framelargura)
-    
-    // Teto (Horizonte em 105px)
     if (j->y < 105) j->y = 105;
 
-    // Chão (720px - altura da imagem)
     if (j->y > 720 - j->sprite.height) j->y = 720 - j->sprite.height;
 
-    // Parede Esquerda (0)
     if (j->x < 0) j->x = 0;
 
-    // Parede Direita (1280px - largura do frame atual)
     if (j->x > 1280 - j->framelargura) j->x = 1280 - j->framelargura;
-    // ---------------------------------
 
-    // Atualiza a hitbox com a posição final corrigida
     j->hitbox.x = (float)j->x;
     j->hitbox.y = (float)j->y;
 }

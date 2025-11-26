@@ -103,9 +103,9 @@ void Estado_Desenhar(void) {
             if (imgTELA_INICIAL.id != 0) DrawTexture(imgTELA_INICIAL, 0, 0, WHITE);
             else ClearBackground(RAYWHITE);
 
-            DrawText("BONDED MVP - Pressione ESPACO para iniciar", 220, 40, 30, BLACK);
-            DrawText("WASD para mover, clique esquerdo para atacar", 220, 86, 20, DARKGRAY);
-            DrawText("5 fases. Derrote todos os inimigos para avançar.", 220, 120, 18, DARKGRAY);
+            DrawText("BONDED MVP - Pressione ESPACO para iniciar",350, 650, 20, WHITE);
+            DrawText("WASD para mover, clique esquerdo para atacar", 350, 86, 20, WHITE);
+            DrawText("5 fases. Derrote todos os inimigos para avançar.", 350, 120, 20, DARKGRAY);
             break;
 
         case FASE_1:
