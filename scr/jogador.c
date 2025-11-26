@@ -33,6 +33,7 @@ void iniciar_jogador(Jogador *j, const char *spritePath) {
     if(j->spriteataque.id == 0){
         printf("Erro ao carregar sprite de ataque: assets/ataque.png\n");
     }
+    
 
     int framesAtaque = 2;
     j->larguraframeataque = j->spriteataque.width / framesAtaque;
@@ -129,23 +130,43 @@ void mover_jogador(Jogador *j){
 }
 
 void desenhar_jogador(const Jogador *j){
-    int offset_frame_parado = ((j->ultimadirecaoH == 1) ? 3 : 0);
-    int frameIndex;
-
     if(j->atacando){
-        float offsetX = (j->ultimadirecaoH == 1) ? j->framelargura : -j->larguraframeataque;
-        Rectangle destRec = {
-            (float)j->x + offsetX,
+        float xSource = 0.0f;
+        
+        if (j->ultimadirecaoH == -1) {
+            xSource = (float)j->larguraframeataque;
+        } else {
+            xSource = 0.0f; 
+        }
+
+        Rectangle frameSource = {
+            xSource, 
+            0.0f, 
+            (float)j->larguraframeataque, 
+            (float)j->alturaframeataque   
+        };
+
+        Rectangle frameDestino = {
+            (float)j->x,
             (float)j->y,
             (float)j->larguraframeataque,
             (float)j->alturaframeataque
         };
 
-        float drawX = j->x + (j->ultimadirecaoH == 1 ? j->framelargura : -j->larguraframeataque);
-        float drawY = j->y;
+        DrawTexturePro(
+            j->spriteataque,
+            frameSource,
+            frameDestino,
+            (Vector2){0, 0},
+            0.0f,
+            WHITE
+        );
 
-        return;
+        return; 
     }
+
+    int offset_frame_parado = ((j->ultimadirecaoH == 1) ? 3 : 0);
+    int frameIndex;
 
     if (j->movendo){
         frameIndex = j->frameatual + ((j->ultimadirecaoH == 1) ? 3 : 0);
@@ -153,14 +174,14 @@ void desenhar_jogador(const Jogador *j){
         frameIndex = offset_frame_parado;
     }
 
-    Rectangle frameSource ={
+    Rectangle frameSource = {
         (float)(frameIndex * j->framelargura),
         0.0f,
         (float)j->framelargura,
         (float)j->sprite.height
     };
 
-    Rectangle frameDestino ={
+    Rectangle frameDestino = {
         (float)j->x,
         (float)j->y,
         (float)j->framelargura,
