@@ -1,0 +1,27 @@
+# Makefile
+# Nome do Executável
+TARGET = bonded
+
+SRC = $(wildcard scr/*.c)
+
+# Flags de Compilação
+CFLAGS = -Wall
+LDFLAGS = -lraylib -lm
+
+# Regra padrao 'all'
+all: $(TARGET)
+
+# Regra para criar o executável 'bonded'
+$(TARGET): $(SRC)
+# INSERIR O CARACTERE TAB AQUI!
+	gcc $(SRC) -o $(TARGET) $(CFLAGS) $(LDFLAGS)
+
+# Regra para rodar
+run: $(TARGET)
+# INSERIR O CARACTERE TAB AQUI!
+	./$(TARGET)
+
+clean:
+	rm -f $(TARGET)
+
+.PHONY: all run clean
