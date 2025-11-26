@@ -30,11 +30,11 @@ typedef struct {
 
 parametroFase parametroFases[6] = {
     {0,    0.0f, 0, 0.0f},   
-    {5,    3.0f, 10, 120.0f}, 
-    {8,    3.5f, 10, 150.0f}, 
-    {10,   4.0f, 20, 180.0f}, 
-    {12,   4.5f, 20, 200.0f}, 
-    {15,   5.0f, 30, 240.0f} 
+    {5,    3.0f, 1, 120.0f}, 
+    {8,    3.5f, 1, 150.0f}, 
+    {10,   4.0f, 1, 180.0f}, 
+    {12,   4.5f, 1, 200.0f}, 
+    {15,   5.0f, 1, 240.0f} 
 };
 
 void Estado_Iniciar(void) {
@@ -42,8 +42,8 @@ void Estado_Iniciar(void) {
     imgTELA_INICIAL = LoadTexture("assets/tela_de_inicio.jpg");
     imgFase[1] = LoadTexture("assets/Fase1.jpg");
     imgFase[2] = LoadTexture("assets/Fase2.jpg");
-    imgFase[3] = LoadTexture("assets/Fase3.jpg");
-    imgFase[4] = LoadTexture("assets/Fase4.jpg");
+    imgFase[3] = LoadTexture("assets/Fase34.jpg");
+    imgFase[4] = LoadTexture("assets/Fase34.jpg");
     imgFase[5] = LoadTexture("assets/Fase5.jpg");
 
     CarregarInimigoTex("assets/Inimigo.png");
@@ -174,7 +174,6 @@ void Estado_Update(void) {
                 estado_atual = TELA_PERDEU;
                 partidaEmAndamento = false;
                 LiberarInimigos();
-                return;
             }
         }
     }
@@ -187,7 +186,7 @@ void Estado_Update(void) {
 
         Vector2 posJogador = { (float)j.x, (float)j.y };
         AtualizarInimigos(posJogador, delta);
-        VerificarColisao(j.hitbox);
+        VerificarColisao(j.hitbox, &j);
 
         if (j.atacando && !j.ataqueprocessado) {
             Rectangle hitboxAtaque = {
@@ -205,7 +204,6 @@ void Estado_Update(void) {
         estado_atual = TELA_PERDEU;
         partidaEmAndamento = false;
         LiberarInimigos();
-        return;
     }
 
     if (faseAtual >= 1 && faseAtual <= 5 && total_inimigos_vivos <= 0 &&
@@ -222,7 +220,6 @@ void Estado_Update(void) {
             ultimoTempo = tempoTotalPartida;
             SalvarLeaderboard(ultimoTempo);
             LiberarInimigos();
-            return;
         }
     }
 
@@ -236,6 +233,7 @@ void Estado_Update(void) {
         case TELA_PERDEU:
             if (IsKeyPressed(KEY_SPACE)) {
                 LiberarInimigos();
+                j.hp = 100;
                 estado_atual = TELA_INICIAL;
             }
             break;
@@ -243,6 +241,7 @@ void Estado_Update(void) {
         case TELA_GANHOU:
             if (IsKeyPressed(KEY_SPACE)) {
                 LiberarInimigos();
+                j.hp = 100;
                 estado_atual = TELA_INICIAL;
             }
             break;

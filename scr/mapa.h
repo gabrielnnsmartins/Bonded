@@ -1,4 +1,4 @@
-#ifndef Mapa_h
+/*#ifndef Mapa_h
 #define Mapa_h
 
 #include<raylib.h>
@@ -15,4 +15,4 @@ void DesenharMapa();
 bool Mapa_TileSolido(int tx, int ty);
 bool Mapa_ChecarColisaoJogador(int nx, int ny, int largura, int altura);
 
-#endif
+#endif*/

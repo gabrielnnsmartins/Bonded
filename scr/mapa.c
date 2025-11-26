@@ -1,4 +1,4 @@
-#include "mapa.h"
+/*#include "mapa.h"
 
 int MAPA[Mapa_Altura][Mapa_Largura] = {0};
 
@@ -21,7 +21,7 @@ void CarregarMapa(){
     for (int y = 0; y < Mapa_Altura; y++)
     {
         MAPA[y][0] = 1;
-        MAPA[y][Mapa_Largura] = 1;
+        MAPA[y][Mapa_Largura - 1] = 1;
     }   
 }
 
@@ -35,4 +35,4 @@ void DesenharMapa(){
         
     }
     
-}
+}*/

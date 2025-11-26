@@ -2,6 +2,7 @@
 #define INIMIGO_H
 
 #include "raylib.h"
+#include "jogador.h"
 #include <stdbool.h>
 
 typedef struct Inimigo {
@@ -33,7 +34,7 @@ void RemoverInimigosInativos();
 void DesenharInimigos();
 void LiberarInimigos();
 
-void VerificarColisao(Rectangle player);
+void VerificarColisao(Rectangle hitbox, Jogador *j);
 void VerificarColisaoAtaque(Rectangle hitbox, int dano);
 
 #endif

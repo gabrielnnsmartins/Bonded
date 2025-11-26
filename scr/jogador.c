@@ -134,9 +134,9 @@ void desenhar_jogador(const Jogador *j){
         float xSource = 0.0f;
         
         if (j->ultimadirecaoH == -1) {
-            xSource = (float)j->larguraframeataque;
+            xSource = 0.0f;
         } else {
-            xSource = 0.0f; 
+            xSource = (float)j->larguraframeataque;
         }
 
         Rectangle frameSource = {
