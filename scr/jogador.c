@@ -145,7 +145,7 @@ void desenhar_jogador(const Jogador *j){
 
     if (j->atacando) {
 
-        int frame = (j->ultimadirecaoH == 1 ? 0 : 1);
+        int frame = (j->ultimadirecaoH == 1 ? 1 : 0);
 
         Rectangle src = {
             frame * j->larguraframeataque,
@@ -160,7 +160,7 @@ void desenhar_jogador(const Jogador *j){
         };
 
         DrawTextureRec(j->spriteataque, src, pos, WHITE);
-        return;  
+        return;     
     }
 
     if (j->movendo){
