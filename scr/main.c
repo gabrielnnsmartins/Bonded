@@ -15,7 +15,7 @@ int main(void) {
     TraceLog(LOG_INFO, "Carregando texturas...");
     Texture2D test = LoadTexture("assets/tela_de_inicio.jpg");
     if (test.id == 0) {
-        TraceLog(LOG_ERROR, "FALHOU ao carregar: assets/teste.png");
+        TraceLog(LOG_ERROR, "FALHOU ao carregar: assets/teste.png");s
     } else {
         TraceLog(LOG_INFO, "Carregou normalmente!");
     }

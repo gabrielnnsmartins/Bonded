@@ -31,19 +31,19 @@ void iniciar_jogador(Jogador *j, const char *spritePath) {
         (float)j->sprite.height 
     };
 
-    j->atacando = false;
-    j->tempoataque = 0.0f;
-    j->duracaoataque = 0.25f;
-
     j->spriteataque = LoadTexture("assets/ataque.png");
     if(j->spriteataque.id == 0){
         printf("Erro ao carregar sprite de ataque: assets/ataque.png\n");
     }
 
-    j->larguraframeataque = j->spriteataque.width;
+    int framesAtaque = 2;
+    j->larguraframeataque = j->spriteataque.width / framesAtaque;
     j->alturaframeataque = j->spriteataque.height;
 
-
+    j->atacando = false;
+    j->tempoataque = 0.0f;
+    j->duracaoataque = 0.25f;
+    j-> ataqueprocessado = false;
 }
 
 // atualiza os frames fazendo a animação
@@ -56,6 +56,7 @@ void atualizar_jogador(Jogador *j){
         {
             j->atacando = false;
             j->tempoataque = 0.0f;
+            j->ataqueprocessado = false;
         }
         return;
     }
@@ -86,6 +87,7 @@ void atacar (Jogador *j){
     if (!j->atacando){
         j->atacando = true;
         j->tempoataque = 0.0f;
+        j->ataqueprocessado = false;
     }
 }
 
@@ -140,19 +142,22 @@ void desenhar_jogador(const Jogador *j){
 
     if(j->atacando){
 
-        float offsetX = (j->ultimadirecaoH == 1) ? j->framelargura : -j->larguraframeataque;
+        int frame = (j->ultimadirecaoH == 1) ? 1 : 0;
 
-        Rectangle destRec = {
-            (float)j->x + offsetX,
-            (float)j->y,
-            (float)j->larguraframeataque,
-            (float)j->alturaframeataque
+        Rectangle srcRec = {
+            frame * j->larguraframeataque,
+            0,
+            j->larguraframeataque,
+            j->alturaframeataque
         };
+
+        float drawX = j->x + (j->ultimadirecaoH == 1 ? j->framelargura : -j->larguraframeataque);
+        float drawY = j->y;
 
         DrawTextureRec(
             j->spriteataque,
-            (Rectangle){0, 0, (float)j->larguraframeataque, (float)j->alturaframeataque},
-            (Vector2){ destRec.x, destRec.y},
+            srcRec,
+            (Vector2){ drawX, drawY},
             WHITE
         );
 

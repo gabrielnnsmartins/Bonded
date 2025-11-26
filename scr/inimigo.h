@@ -2,16 +2,19 @@
 #define INIMIGO_H
 
 #include "raylib.h"
+#include <stdbool.h>
 
-
-typedef struct NoInimigo {
-    Vector2 posicao;
+typedef struct Inimigo {
+    Vector2 pos;
+    int vida;
     float velocidade;
+
     int frameAtual;
     float tempoAnimacao;
-    int vida;
+
     bool ativo;
-    struct NoInimigo *next;
+    float cooldown;
+    struct Inimigo *next;
 } Inimigo;
 
 extern Inimigo *ListaInimigo;
@@ -22,12 +25,15 @@ extern int alturaFrameInimigo;
 extern int total_inimigos_vivos;
 
 void CarregarInimigoTex(const char *path);
+void UnloadTexInimigo();
+
 void AdicionarInimigo(Vector2 posInicial, float velocidade, int vida);
 void AtualizarInimigos(Vector2 posJogador, float delta);
 void RemoverInimigosInativos();
-void LiberarInimigos();
 void DesenharInimigos();
+void LiberarInimigos();
+
 void VerificarColisao(Rectangle player);
 void VerificarColisaoAtaque(Rectangle hitbox, int dano);
-void UnloadTexInimigo();
+
 #endif

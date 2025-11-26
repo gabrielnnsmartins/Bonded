@@ -29,7 +29,8 @@ typedef struct {
     Texture2D spriteataque;
     int larguraframeataque;
     int alturaframeataque;
-
+    bool ataqueprocessado;
+    
 } Jogador;
 
 void iniciar_jogador(Jogador *j, const char *spritePath);

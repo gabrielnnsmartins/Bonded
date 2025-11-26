@@ -1,7 +1,6 @@
 #include "leaderboard.h" 
 #include <string.h>     
 
-float tempoTotalPartida = 0.0f;
 bool partidaEmAndamento = false;
 float ultimoTempo = 0.0f;
 float temposLeaderboard[5];
