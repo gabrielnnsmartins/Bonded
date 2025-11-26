@@ -2,8 +2,6 @@
 #include "jogador.h"
 #include <stdio.h>
 
-const float duracaoataque;
-
 //Inicia o jogador na tela, com sua posição, textura e hp
 void iniciar_jogador(Jogador *j, const char *spritePath) {
 
@@ -35,7 +33,12 @@ void iniciar_jogador(Jogador *j, const char *spritePath) {
 
     j->atacando = false;
     j->tempoataque = 0.0f;
+    j->duracaoataque = 0.25f;
+
     j->spriteataque = LoadTexture("assets/ataque.png");
+    if(j->spriteataque.id == 0){
+        printf("Erro ao carregar sprite de ataque: assets/ataque.png\n");
+    }
 
     j->larguraframeataque = j->spriteataque.width;
     j->alturaframeataque = j->spriteataque.height;
@@ -192,4 +195,5 @@ void desenhar_jogador(const Jogador *j){
 // some com o jogador
 void unload_jogador(Jogador *j){
     UnloadTexture(j->sprite);
+    if (j->spriteataque.id != 0) UnloadTexture(j->spriteataque);
 }

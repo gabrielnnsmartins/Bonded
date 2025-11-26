@@ -1,14 +1,22 @@
 #include "inimigo.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
 Inimigo *ListaInimigo = NULL;
 int total_inimigos_vivos = 0;
+Texture2D texInimigo = { 0 };
 
 int larguraFrameInimigo = 32;
 int alturaFrameInimigo = 32;
 
-//Cria um inimigo
+void CarregarInimigoTex(const char *path){
+    texInimigo = LoadTexture(path);
+    if (texInimigo.id == 0){
+        printf("Erro ao carregar sprite de inimigo\n");
+    }
+}
+
 void AdicionarInimigo(Vector2 posInicial, float velocidade, int vida) {
     Inimigo *novo = malloc(sizeof(Inimigo));
     if (!novo){
@@ -23,9 +31,6 @@ void AdicionarInimigo(Vector2 posInicial, float velocidade, int vida) {
     ListaInimigo = novo;
     total_inimigos_vivos++;
 }
-
-
-//  Atualizar movimento e animação
 
 void AtualizarInimigos(Vector2 posJogador, float delta) {
     Inimigo *atual = ListaInimigo;
@@ -55,8 +60,6 @@ void AtualizarInimigos(Vector2 posJogador, float delta) {
     RemoverInimigosInativos();
 }
 
-//  Remoção dos mortos
-
 void RemoverInimigosInativos() {
     Inimigo *atual = ListaInimigo;
     Inimigo *ant = NULL;
@@ -83,8 +86,59 @@ void RemoverInimigosInativos() {
     }
 }
 
+void VerificarColisao(Rectangle player) {
+    Inimigo *atual = ListaInimigo;
 
-//  Desenhar os inimigos
+    while (atual != NULL) {
+        Rectangle rIn = {
+            atual->posicao.x,
+            atual->posicao.y,
+            larguraFrameInimigo,
+            alturaFrameInimigo
+        };
+
+        if (CheckCollisionRecs(player, rIn)) {
+            atual->vida = 0;
+            return;
+        }
+
+        atual = atual->next;
+    }
+}
+
+void VerificarColisaoAtaque(Rectangle hitbox, int dano) {
+    Inimigo *atual = ListaInimigo;
+
+    while (atual != NULL) {
+
+        Rectangle rIn = {
+            atual->posicao.x,
+            atual->posicao.y,
+            (float)larguraFrameInimigo,
+            (float)alturaFrameInimigo
+        };
+
+        if (CheckCollisionRecs(hitbox, rIn)) {
+            atual->vida -= dano;
+            return; 
+        }
+
+        atual = atual->next;
+    }
+}
+
+void LiberarInimigos() {
+    Inimigo *atual = ListaInimigo;
+
+    while (atual != NULL) {
+        Inimigo *tmp = atual;
+        atual = atual->next;
+        free(tmp);
+    }
+
+    ListaInimigo = NULL;
+    total_inimigos_vivos =0;
+}
 
 void DesenharInimigos() {
     extern Texture2D texInimigo;
@@ -113,69 +167,6 @@ void DesenharInimigos() {
     }
 }
 
-
-//  Colisão entre inimigo e jogador
-
-void VerificarColisao(Rectangle player) {
-    Inimigo *atual = ListaInimigo;
-
-    while (atual != NULL) {
-        Rectangle rIn = {
-            atual->posicao.x,
-            atual->posicao.y,
-            larguraFrameInimigo,
-            alturaFrameInimigo
-        };
-
-        if (CheckCollisionRecs(player, rIn)) {
-            atual->vida = 0;
-            return;
-        }
-
-        atual = atual->next;
-    }
-}
-
-
-//  Liberar tudo da memória
-// Implementação em inimigo.c
-
-void VerificarColisaoAtaque(Rectangle hitbox, int dano) {
-    Inimigo *atual = ListaInimigo;
-
-    while (atual != NULL) {
-        // 1. Criar o retângulo de colisão do inimigo
-        Rectangle rIn = {
-            atual->posicao.x,
-            atual->posicao.y,
-            (float)larguraFrameInimigo,
-            (float)alturaFrameInimigo
-        };
-
-        // 2. Checar a colisão entre o ataque e o inimigo
-        if (CheckCollisionRecs(hitbox, rIn)) {
-            // 3. Aplicar o dano
-            atual->vida -= dano;
-
-            // Opcional: Se você quiser que o ataque pare após atingir o primeiro inimigo,
-            // você pode adicionar 'break;' ou 'return;' aqui.
-            // Se o ataque deve atingir TODOS os inimigos na área, remova o 'return'.
-            return; 
-        }
-
-        atual = atual->next;
-    }
-}
-
-void LiberarInimigos() {
-    Inimigo *atual = ListaInimigo;
-
-    while (atual != NULL) {
-        Inimigo *tmp = atual;
-        atual = atual->next;
-        free(tmp);
-    }
-
-    ListaInimigo = NULL;
-    total_inimigos_vivos =0;
+void UnloadTexInimigo(){
+    if (texInimigo.id != 0) UnloadTexture(texInimigo);
 }

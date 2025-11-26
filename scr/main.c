@@ -1,36 +1,48 @@
 #include "raylib.h"
 #include "jogador.h"
-#include "leaderboard.h"
 #include "estadojogo.h"
+#include "inimigo.h"
+#include "leaderboard.h"
 
-Jogador j;
+Jogador j; 
 
 int main(void) {
 
-    // Inicialização da Janela, jogador e fps
-    InitWindow(1280, 720, "Bonded - MVP");
-    iniciar_jogador(&j, "assets/personagem.png");
-    Estado_Iniciar();
+    const int larguraTela = 1280;
+    const int alturaTela = 720;
+    
+    InitWindow(larguraTela, alturaTela, "Bonded - MVP");
+    TraceLog(LOG_INFO, "Carregando texturas...");
+    Texture2D test = LoadTexture("assets/tela_de_inicio.jpg");
+    if (test.id == 0) {
+        TraceLog(LOG_ERROR, "FALHOU ao carregar: assets/teste.png");
+    } else {
+        TraceLog(LOG_INFO, "Carregou normalmente!");
+    }
+    UnloadTexture(test);
+
     SetTargetFPS(60);
 
-    // Loop Principal do Jogo
+    Estado_Iniciar();
+    iniciar_jogador(&j, "assets/personagem.png");
+    CarregarInimigoTex("assets/Inimigo.png"); 
+    CarregarLeaderboard();
+
     while (!WindowShouldClose()) {
 
-        Estado_Update();
-        mover_jogador(&j);
-        atualizar_jogador(&j);
+        Estado_Update(); 
         
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
-        desenhar_jogador(&j);
+        Estado_Desenhar();
 
         EndDrawing();
-
-
     }
 
     unload_jogador(&j);
+    UnloadTexInimigo();
+    Estado_Finalizar();
     CloseWindow();
     return 0;
 }

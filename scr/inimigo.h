@@ -21,7 +21,7 @@ extern int alturaFrameInimigo;
 
 extern int total_inimigos_vivos;
 
-
+void CarregarInimigoTex(const char *path);
 void AdicionarInimigo(Vector2 posInicial, float velocidade, int vida);
 void AtualizarInimigos(Vector2 posJogador, float delta);
 void RemoverInimigosInativos();
@@ -29,4 +29,5 @@ void LiberarInimigos();
 void DesenharInimigos();
 void VerificarColisao(Rectangle player);
 void VerificarColisaoAtaque(Rectangle hitbox, int dano);
+void UnloadTexInimigo();
 #endif

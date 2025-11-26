@@ -25,7 +25,7 @@ typedef struct {
     //para o ataque
     bool atacando;
     float tempoataque;
-    const float duracaoataque;
+    float duracaoataque;
     Texture2D spriteataque;
     int larguraframeataque;
     int alturaframeataque;

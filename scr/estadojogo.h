@@ -9,7 +9,9 @@ typedef enum{
     FASE_3,
     FASE_4,
     FASE_FINAL,
-    TELA_FINAL
+    TELA_FINAL,
+    TELA_PERDEU,
+    TELA_GANHOU,
 } estadojogo;
 
 extern estadojogo estado_atual;
@@ -17,5 +19,6 @@ extern estadojogo estado_atual;
 void Estado_Iniciar();
 void Estado_Update();
 void Estado_Desenhar();
+void Estado_Finalizar();
 
 #endif
